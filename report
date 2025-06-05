@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Campanhas</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; padding: 20px; }
+    .card-total { font-size: 1.4rem; font-weight: bold; }
+    canvas { max-height: 300px; }
+    #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.9); display: flex; align-items: center; justify-content: center; z-index: 9999; font-size: 1.5rem; font-weight: 600; color: #0d6efd; }
+    .choices__inner { min-height: 45px; max-height: 120px; overflow-y: auto; }
+    .choices__list--multiple .choices__item { white-space: nowrap; text-overflow: ellipsis; overflow: hidden; max-width: 140px; }
+    #btnExportar { background-color: #d32f2f; border: none; color: white; }
+    #btnExportar:hover { background-color: #b71c1c; }
+  </style>
+</head>
+<body>
+<div id="loading"><div class="d-flex align-items-center"><div class="spinner-border text-primary" role="status"></div><span>Carregando dados...</span></div></div>
+<div class="container" style="display:none" id="conteudo">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 id="tituloRelatorio">Resultados</h3>
+    <div id="areaExportar">
+        <button id="btnExportar" class="btn"><i class="fas fa-file-pdf me-2"></i>Exportar para PDF</button>
+    </div>
+  </div>
+  <div class="row g-3 mb-4" id="areaFiltros">
+    <div class="col"><select id="filtroLoja" multiple></select></div>
+    <div class="col"><select id="filtroCampanha" multiple></select></div>
+    <div class="col"><select id="filtroTipo" multiple></select></div>
+    <div class="col"><select id="filtroAno" multiple></select></div>
+    <div class="col"><select id="filtroMes" multiple></select></div>
+  </div>
+  <div class="row mb-4">
+    <div class="col-md-6"><div class="card p-3"><div>Total Receita Impactada</div><div class="card-total" id="totalCompra">R$ 0,00</div></div></div>
+    <div class="col-md-6"><div class="card p-3"><div>Total de Disparos</div><div class="card-total" id="totalDisparos">0</div></div></div>
+  </div>
+  <div class="row mb-4">
+    <div class="col-md-6"><div class="card p-3 mb-4"><h6>Tipos de Campanhas</h6><canvas id="graficoDonut"></canvas></div></div>
+    <div class="col-md-6"><div class="card p-3 mb-4"><h6>Receita Impactada Mensal</h6><canvas id="graficoBarras"></canvas></div></div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-striped" id="tabelaDados">
+      <thead><tr><th>Nome da Loja</th><th>Qtd Disparos</th><th>Total Receita Impactada</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+<hr />
+<div class="mt-5">
+  <h4>📋 Estratégias de Páginas de Captura <small>(Todo Período)</small></h4>
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover" id="tabelaPaginas">
+      <thead>
+        <tr>
+          <th>Nome da Loja</th>
+          <th>Nome da Página</th>
+          <th>Tipo da Página</th>
+          <th>Qtd de Acessos</th>
+          <th>Qtd de Capturas</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="mt-5">
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="card p-3">
+        <div>Total de Respostas</div>
+        <div class="card-total" id="totalRespostas">0</div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card p-3">
+        <div>NPS</div>
+        <div class="card-total" id="npsPeriodo">0.00</div>
+      </div>
+    </div>
+  </div>
+  <h4>📋 Pesquisas realizadas <small>(Todo Período)</small></h4>
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover" id="tabelaPesquisas">
+      <thead>
+        <tr>
+          <th>Nome da Loja</th>
+          <th>Nome da Pesquisa</th>
+          <th>Qtd de Respostas</th>
+          <th>NPS</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+
+</div>
+<script>
+const mesesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const params = new URLSearchParams(window.location.search);
+const rawUserId = params.get('userId') || "";
+const userId = rawUserId.replace('1092EZT3', '');
+const endpoint = `https://api.fabrica.app/user/queries/campaignbyuser?userId=${userId}`;
+let dadosOriginais = [];
+const filtrosChoices = {};
+
+fetch(endpoint)
+  .then(res => res.json())
+  .then(data => {
+    dadosOriginais = data.map(item => ({ ...item, total_compra: parseFloat(item.total_compra), qtd_disparos: parseInt(item.qtd_disparos) }));
+    popularFiltros(dadosOriginais);
+    aplicarFiltros();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('conteudo').style.display = 'block';
+  });
+
+function popularFiltros(data) {
+  const set = campo => [...new Set(data.map(x => x[campo]))].sort();
+  setSelect('filtroLoja', set('nome_loja'));
+  setSelect('filtroCampanha', set('nome_campanha'));
+  setSelect('filtroTipo', set('tipo_campanha'));
+  setSelect('filtroAno', set('ano'));
+  setSelect('filtroMes', set('mes'));
+}
+
+function setSelect(id, valores) {
+  const select = document.getElementById(id);
+  select.innerHTML = '';
+  const defaultChoices = valores.map(v => ({ value: v, label: v, selected: true }));
+  if (filtrosChoices[id]) {
+    filtrosChoices[id].clearChoices();
+    filtrosChoices[id].setChoices(defaultChoices, 'value', 'label', true);
+  } else {
+    filtrosChoices[id] = new Choices(select, { removeItemButton: true, shouldSort: true, searchEnabled: true, placeholder: true, placeholderValue: 'Filtrar...' });
+    filtrosChoices[id].setChoices(defaultChoices, 'value', 'label', true);
+    select.addEventListener('change', aplicarFiltros);
+  }
+}
+
+function aplicarFiltros() {
+  const getSelecionados = id => filtrosChoices[id].getValue(true);
+  const filtrosSelecionados = {
+    filtroLoja: getSelecionados('filtroLoja'),
+    filtroCampanha: getSelecionados('filtroCampanha'),
+    filtroTipo: getSelecionados('filtroTipo'),
+    filtroAno: getSelecionados('filtroAno'),
+    filtroMes: getSelecionados('filtroMes')
+  };
+
+  const dadosFiltrados = dadosOriginais.filter(item => {
+    return (!filtrosSelecionados.filtroLoja.length || filtrosSelecionados.filtroLoja.includes(item.nome_loja)) &&
+           (!filtrosSelecionados.filtroCampanha.length || filtrosSelecionados.filtroCampanha.includes(item.nome_campanha)) &&
+           (!filtrosSelecionados.filtroTipo.length || filtrosSelecionados.filtroTipo.includes(item.tipo_campanha)) &&
+           (!filtrosSelecionados.filtroAno.length || filtrosSelecionados.filtroAno.includes(item.ano)) &&
+           (!filtrosSelecionados.filtroMes.length || filtrosSelecionados.filtroMes.includes(item.mes));
+  });
+
+  atualizarTitulo(filtrosSelecionados.filtroMes, filtrosSelecionados.filtroLoja);
+  atualizarTotalizadores(dadosFiltrados);
+  atualizarTabela(dadosFiltrados);
+  atualizarGrafico(dadosFiltrados);
+  atualizarGraficoBarras(dadosFiltrados);
+
+  // Atualiza com base nos filtros agora corretamente
+  preencherTabelaPaginas(dadosPaginas, filtrosSelecionados.filtroLoja);
+  fetch(endpointPesquisa)
+    .then(res => res.json())
+    .then(data => preencherTabelaPesquisas(data, filtrosSelecionados.filtroLoja));
+}
+
+function atualizarTitulo(meses, lojas) {
+  const titulo = document.getElementById('tituloRelatorio');
+  const nomeMes = meses.length === 1 ? mesesNomes[parseInt(meses[0]) - 1] : 'Período selecionado';
+  const nomeLoja = lojas.length === 1 ? lojas[0] : `${lojas.length} Unidades`;
+  titulo.textContent = `📊 Resultados em ${nomeMes} para ${nomeLoja}`;
+}
+
+function atualizarTotalizadores(data) {
+  const totalCompra = data.reduce((sum, x) => sum + x.total_compra, 0);
+  const totalDisparos = data.reduce((sum, x) => sum + x.qtd_disparos, 0);
+  document.getElementById('totalCompra').textContent = totalCompra.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  document.getElementById('totalDisparos').textContent = totalDisparos;
+}
+
+function atualizarTabela(data) {
+  const agrupado = {};
+  data.forEach(item => {
+    if (!agrupado[item.nome_loja]) agrupado[item.nome_loja] = { qtd_disparos: 0, total_compra: 0 };
+    agrupado[item.nome_loja].qtd_disparos += item.qtd_disparos;
+    agrupado[item.nome_loja].total_compra += item.total_compra;
+  });
+  const tbody = document.querySelector('#tabelaDados tbody');
+  tbody.innerHTML = '';
+  Object.entries(agrupado).sort((a, b) => b[1].total_compra - a[1].total_compra).forEach(([loja, valores]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${loja}</td><td>${valores.qtd_disparos}</td><td>R$ ${valores.total_compra.toFixed(2)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+let grafico;
+function atualizarGrafico(data) {
+  const totalPorTipo = data.reduce((acc, item) => {
+    acc[item.tipo_campanha] = (acc[item.tipo_campanha] || 0) + item.qtd_disparos;
+    return acc;
+  }, {});
+  const ctx = document.getElementById('graficoDonut').getContext('2d');
+  if (grafico) grafico.destroy();
+  grafico = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: Object.keys(totalPorTipo), datasets: [{ data: Object.values(totalPorTipo), backgroundColor: ['#0d6efd', '#ffc107'], hoverOffset: 10 }] },
+    options: { plugins: { legend: { position: 'bottom' }, datalabels: { color: '#000', formatter: value => value } } },
+    plugins: [ChartDataLabels]
+  });
+}
+
+let graficoBarras;
+function atualizarGraficoBarras(data) {
+  const comprasPorMes = {};
+  data.forEach(item => {
+    const chave = `${item.ano}-${item.mes}`;
+    comprasPorMes[chave] = (comprasPorMes[chave] || 0) + item.total_compra;
+  });
+  const labels = Object.keys(comprasPorMes).sort();
+  const valores = labels.map(k => comprasPorMes[k]);
+  const ctx = document.getElementById('graficoBarras').getContext('2d');
+  if (graficoBarras) graficoBarras.destroy();
+  graficoBarras = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ label: 'Total Compras (R$)', data: valores, backgroundColor: '#198754' }] },
+    options: {
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: context => 'R$ ' + context.raw.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) } },
+        datalabels: { anchor: 'end', align: 'top', formatter: value => 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) }
+      },
+      scales: { y: { beginAtZero: true, ticks: { callback: value => 'R$ ' + value.toLocaleString('pt-BR') } } }
+    },
+    plugins: [ChartDataLabels]
+  });
+}
+
+document.getElementById('btnExportar').addEventListener('click', function () {
+  const areaFiltros = document.getElementById('areaFiltros');
+  const areaExportar = document.getElementById('areaExportar');
+
+  areaFiltros.style.display = 'none';
+  areaExportar.style.display = 'none';
+
+  const target = document.getElementById('conteudo');
+  html2canvas(target, { scale: 2 }).then(canvas => {
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save("relatorio-retorne.pdf");
+
+    // Reexibe os elementos ocultos
+    areaFiltros.style.display = '';
+    areaExportar.style.display = '';
+  });
+});
+
+
+let dadosPaginas = [];
+
+const endpointPaginas = `https://api.fabrica.app/user/queries/pagesbyuser?userId=${userId}`;
+
+fetch(endpointPaginas)
+  .then(res => res.json())
+  .then(data => {
+    dadosPaginas = data;
+    preencherTabelaPaginas(dadosPaginas); // mostra tudo na primeira carga
+  });
+
+function preencherTabelaPaginas(data, lojasSelecionadas = []) {
+  const tbody = document.querySelector('#tabelaPaginas tbody');
+  tbody.innerHTML = '';
+
+  const dadosFiltrados = lojasSelecionadas.length
+    ? data.filter(p => lojasSelecionadas.includes(p.nome_loja))
+    : data;
+
+  dadosFiltrados.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.nome_loja}</td>
+      <td>${p.nome_pagina}</td>
+      <td>${p.tipo_pagina}</td>
+      <td>${p.qtd_visualizacoes}</td>
+      <td>${p.qtd_capturas}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+const endpointPesquisa = `https://api.fabrica.app/user/queries/surveybyuser?userId=${userId}`;
+
+fetch(endpointPesquisa)
+  .then(res => res.json())
+  .then(data => preencherTabelaPesquisas(data));
+
+function preencherTabelaPesquisas(data, lojasSelecionadas = []) {
+  const tbody = document.querySelector('#tabelaPesquisas tbody');
+  tbody.innerHTML = '';
+  let totalRespostas = 0;
+  let somaNPS = 0;
+  let lojasComNPS = 0;
+
+  const dadosFiltrados = lojasSelecionadas.length
+    ? data.filter(p => lojasSelecionadas.includes(p.nome_loja))
+    : data;
+
+  dadosFiltrados.forEach(p => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.nome_loja}</td>
+      <td>${p.nome_pesquisa}</td>
+      <td>${p.total_respostas}</td>
+      <td>${parseFloat(p.nps).toFixed(2)}</td>
+    `;
+    tbody.appendChild(tr);
+
+    totalRespostas += parseInt(p.total_respostas);
+    if (!isNaN(parseFloat(p.nps))) {
+      somaNPS += parseFloat(p.nps);
+      lojasComNPS++;
+    }
+  });
+
+  const mediaNPS = lojasComNPS > 0 ? somaNPS / lojasComNPS : 0;
+  document.getElementById('totalRespostas').textContent = totalRespostas;
+  document.getElementById('npsPeriodo').textContent = mediaNPS.toFixed(2);
+}
+
+</script>
+</body>
+</html>
