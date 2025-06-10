@@ -40,7 +40,15 @@
     <div class="col"><select id="filtroTipo" multiple></select></div>
     <div class="col"><select id="filtroAno" multiple></select></div>
     <div class="col"><select id="filtroMes" multiple></select></div>
+    <br />
+  <div class="col-12 text-end">
+  <button class="btn btn-primary" id="btnAplicarFiltros"><i class="fas fa-filter me-2"></i>Filtrar Dados</button>
   </div>
+  </div>
+
+  
+
+
   <div class="row mb-4">
     <div class="col-md-6"><div class="card p-3"><div>Total Receita Impactada</div><div class="card-total" id="totalCompra">R$ 0,00</div></div></div>
     <div class="col-md-6"><div class="card p-3"><div>Total de Disparos</div><div class="card-total" id="totalDisparos">0</div></div></div>
@@ -107,7 +115,11 @@
 
 
 </div>
+<div><p><small>versão 1.1 - Retorne.app</small></p></div>
+
 <script>
+document.getElementById('btnAplicarFiltros').addEventListener('click', aplicarFiltros);
+
 const mesesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const params = new URLSearchParams(window.location.search);
 const rawUserId = params.get('userId') || "";
@@ -121,7 +133,7 @@ fetch(endpoint)
   .then(data => {
     dadosOriginais = data.map(item => ({ ...item, total_compra: parseFloat(item.total_compra), qtd_disparos: parseInt(item.qtd_disparos) }));
     popularFiltros(dadosOriginais);
-    aplicarFiltros();
+    
     document.getElementById('loading').style.display = 'none';
     document.getElementById('conteudo').style.display = 'block';
   });
