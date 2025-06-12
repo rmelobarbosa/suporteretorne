@@ -125,6 +125,11 @@ body.dark-mode #total-label {
   color: #cccccc;
 }
 
+    body.dark-mode .scroll-box h6 {
+  color: #661010 !important;
+}
+
+
   </style>
 </head>
 <body>
@@ -203,7 +208,7 @@ body.dark-mode #total-label {
   </div>
 </div>
 <div>
-  <p><small>Retorne.app v1.6</small></p>
+  <p><small>Retorne.app v1.7</small></p>
 </div>
 <script>
 function toggleTheme() {
@@ -238,11 +243,13 @@ function carregarPainel() {
       }
 
       // Box para scroll horizontal
-      htmlScroll += `
-        <div class="scroll-box">
-          <h6>${nome}</h6>
-          <div><i class="bi bi-people-fill"></i> ${total} clientes</div>
-        </div>`;
+      if (!conectado) {
+        htmlScroll += `
+          <div class="scroll-box">
+            <h6>${nome}</h6>
+            <div><i class="bi bi-people-fill"></i> ${total} clientes</div>
+          </div>`;
+      }
     });
 
     const totalRetorne = conectadosRetorne + desconectadosRetorne;
