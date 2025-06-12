@@ -60,6 +60,14 @@
   white-space: nowrap;
   animation: scroll-horizontal 30s linear infinite;
 }
+  .scroll-track {
+  display: inline-flex;
+  animation: scroll-left 60s linear infinite;
+}
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
 
 .scroll-box {
   min-width: 250px;
@@ -132,6 +140,16 @@ body.dark-mode td.status-desconectado {
 body.dark-mode #total-label {
   color: #cccccc;
 }
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
+.scroll-track {
+  display: inline-flex;
+  animation: scroll-left linear infinite;
+  animation-duration: 60s; /* ajustável */
+}
 
 
   </style>
@@ -199,10 +217,10 @@ body.dark-mode #total-label {
 
 </div>
 <div>
-  <p><small>Retorne.app v1.7</small></p>
+  <p><small>Retorne.app v1.8</small></p>
 </div>
 <script>
-  function toggleFullScreen() {
+function toggleFullScreen() {
   const doc = document.documentElement;
   if (!document.fullscreenElement) {
     doc.requestFullscreen().catch(err => console.error(err));
@@ -228,13 +246,17 @@ function carregarPainel() {
     return;
   }
   const url = `https://api.fabrica.app/user/queries/statusbyuser?userId=${userId}`;
-  
 
   axios.get(url).then(res => {
     const dados = res.data;
 
     let conectados = 0, desconectados = 0;
-    let htmlTabela = '', htmlScroll = '';
+    let htmlTabela = '';
+
+    // Scroll box
+    const scrollTrack = document.getElementById('scroll-lojas');
+    scrollTrack.innerHTML = ''; // limpa
+    const boxes = [];
 
     dados.forEach(loja => {
       const nome = loja.name;
@@ -243,28 +265,30 @@ function carregarPainel() {
       const status = conectado ? 'Conectado' : 'Desconectado';
       const statusClass = conectado ? 'status-conectado' : 'status-desconectado';
 
-      conectado ? conectados++ : desconectados++;
-
-      // Linha da tabela
-      htmlTabela += `<tr><td>${nome}</td><td class="${statusClass}">${status}</td><td>${total}</td></tr>`;
-
-      // Box horizontal
-      if (!conectado) {
-        htmlScroll += `
-          <div class="scroll-box">
-            <h6>${nome}</h6>
-            <div><i class="bi bi-people-fill"></i> ${total} clientes</div>
-          </div>`;
+      if (conectado) {
+        conectados++;
+      } else {
+        desconectados++;
+        const div = document.createElement('div');
+        div.className = 'scroll-box';
+        div.innerHTML = `<h6>${nome}</h6><div><i class="bi bi-people-fill"></i> ${total} clientes</div>`;
+        boxes.push(div);
+        scrollTrack.appendChild(div);
       }
+
+      // Tabela
+      htmlTabela += `<tr><td>${nome}</td><td class="${statusClass}">${status}</td><td>${total}</td></tr>`;
+    });
+
+    // Clona para looping suave
+    boxes.forEach(box => {
+      const clone = box.cloneNode(true);
+      scrollTrack.appendChild(clone);
     });
 
     const totalLojas = conectados + desconectados;
     document.getElementById('total-lojas').innerText = totalLojas;
 
-    // Scroll horizontal duplicado para loop suave
-    document.getElementById('scroll-lojas').innerHTML = htmlScroll + htmlScroll;
-
-    // Totalizadores (único grupo)
     document.getElementById('totalizadores-retorne').innerHTML = `
       <div class="col-md-4">
         <div class="card card-summary p-3">
@@ -285,10 +309,7 @@ function carregarPainel() {
         </div>
       </div>`;
 
-    // Tabela única
     document.getElementById('tabela-retorne').innerHTML = htmlTabela;
-
-    // Ordenação
     new Tablesort(document.getElementById('tabelaRetorne'));
   }).catch(err => {
     console.error('Erro ao buscar dados:', err);
@@ -298,6 +319,7 @@ function carregarPainel() {
 carregarPainel();
 setInterval(carregarPainel, 240000); // Atualiza a cada 4 minutos
 </script>
+
 
 
 </body>
