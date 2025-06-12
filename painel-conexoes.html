@@ -51,6 +51,12 @@
   </style>
 </head>
 <body>
+<div class="container py-3">
+  <div class="text-center mb-4">
+    <h1 class="display-6 fw-bold" id="totalGeral">Total de Lojas: <span id="total-lojas" class="text-primary">...</span></h1>
+  </div>
+</div>
+  
 <div class="container py-4">
   <h2 class="mb-4">Painel de Conexão - Lojas</h2>
 
@@ -96,88 +102,96 @@
 </div>
 
 <script>
+function carregarPainel() {
+  const url = `https://api.fabrica.app/user/queries/statusbyretorne`;
 
-const url = `https://api.fabrica.app/user/queries/statusbyretorne`;
+  axios.get(url).then(res => {
+    const dados = res.data;
+    let desconectadosRetorne = 0;
+    let conectadosRetorne = 0;
+    let desconectadosParceiros = 0;
+    let conectadosParceiros = 0;
+    let htmlRetorne = '', htmlParceiros = '';
 
-axios.get(url).then(res => {
-  const dados = res.data;
-  let desconectadosRetorne = 0;
-  let conectadosRetorne = 0;
-  let desconectadosParceiros = 0;
-  let conectadosParceiros = 0;
-  let htmlRetorne = '', htmlParceiros = '';
+    dados.forEach(loja => {
+      const nome = loja.name;
+      const total = parseInt(loja.total_clientes || 0);
+      const conectado = loja.whatsapp_instance_id !== null && loja.whatsapp_instance_id !== '';
+      const ownerNull = loja.owner === null;
+      const status = conectado ? 'Conectado' : 'Desconectado';
+      const statusClass = conectado ? 'status-conectado' : 'status-desconectado';
+      const row = `<tr><td>${nome}</td><td class="${statusClass}">${status}</td><td>${total}</td></tr>`;
 
-  dados.forEach(loja => {
-    const nome = loja.name;
-    const total = parseInt(loja.total_clientes || 0);
-    const conectado = loja.whatsapp_instance_id !== null && loja.whatsapp_instance_id !== '';
-    const ownerNull = loja.owner === null;
-    const status = conectado ? 'Conectado' : 'Desconectado';
-    const statusClass = conectado ? 'status-conectado' : 'status-desconectado';
-    const row = `<tr><td>${nome}</td><td class="${statusClass}">${status}</td><td>${total}</td></tr>`;
+      if (ownerNull) {
+        conectado ? conectadosRetorne++ : desconectadosRetorne++;
+        htmlRetorne += row;
+      } else {
+        conectado ? conectadosParceiros++ : desconectadosParceiros++;
+        htmlParceiros += row;
+      }
+    });
 
+    const totalRetorne = desconectadosRetorne + conectadosRetorne;
+    const totalParceiros = desconectadosParceiros + conectadosParceiros;
+    const totalGeral = totalRetorne + totalParceiros;
 
-    if (ownerNull) {
-      conectado ? conectadosRetorne++ : desconectadosRetorne++;
-      htmlRetorne += row;
-    } else {
-      conectado ? conectadosParceiros++ : desconectadosParceiros++;
-      htmlParceiros += row;
-    }
+    document.getElementById('total-lojas').innerText = totalGeral;
+
+    document.getElementById('totalizadores-retorne').innerHTML = `
+      <div class="col-md-4">
+        <div class="card card-summary p-3">
+          <h6><i class="bi bi-plug icon-box"></i>Desconectados Retorne.app</h6>
+          <h3>${desconectadosRetorne}</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-summary p-3">
+          <h6><i class="bi bi-check2-circle icon-box"></i>Conectados Retorne.app</h6>
+          <h3>${conectadosRetorne}</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-summary p-3">
+          <h6><i class="bi bi-shop icon-box"></i>Total Lojas Retorne.app</h6>
+          <h3>${totalRetorne}</h3>
+        </div>
+      </div>`;
+
+    document.getElementById('totalizadores-parceiros').innerHTML = `
+      <div class="col-md-4">
+        <div class="card card-summary card-summary-secondary p-3">
+          <h6 class="small"><i class="bi bi-plug icon-box"></i>Desconectados Parceiros</h6>
+          <h4>${desconectadosParceiros}</h4>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-summary card-summary-secondary p-3">
+          <h6 class="small"><i class="bi bi-check2-circle icon-box"></i>Conectados Parceiros</h6>
+          <h4>${conectadosParceiros}</h4>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-summary card-summary-secondary p-3">
+          <h6 class="small"><i class="bi bi-shop icon-box"></i>Total Lojas Parceiros</h6>
+          <h4>${totalParceiros}</h4>
+        </div>
+      </div>`;
+
+    document.getElementById('tabela-retorne').innerHTML = htmlRetorne;
+    document.getElementById('tabela-parceiros').innerHTML = htmlParceiros;
+
+    new Tablesort(document.getElementById('tabelaRetorne'));
+    new Tablesort(document.getElementById('tabelaParceiros'));
+  }).catch(err => {
+    console.error('Erro ao buscar dados:', err);
   });
+}
 
-  const totalRetorne = desconectadosRetorne + conectadosRetorne;
-  const totalParceiros = desconectadosParceiros + conectadosParceiros;
+// Primeira carga
+carregarPainel();
 
-  document.getElementById('totalizadores-retorne').innerHTML = `
-    <div class="col-md-4">
-      <div class="card card-summary p-3">
-        <h6><i class="bi bi-plug icon-box"></i>Desconectados Retorne.app</h6>
-        <h3>${desconectadosRetorne}</h3>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card card-summary p-3">
-        <h6><i class="bi bi-check2-circle icon-box"></i>Conectados Retorne.app</h6>
-        <h3>${conectadosRetorne}</h3>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card card-summary p-3">
-        <h6><i class="bi bi-shop icon-box"></i>Total Lojas Retorne.app</h6>
-        <h3>${totalRetorne}</h3>
-      </div>
-    </div>`;
-
-  document.getElementById('totalizadores-parceiros').innerHTML = `
-    <div class="col-md-4">
-      <div class="card card-summary card-summary-secondary p-3">
-        <h6 class="small"><i class="bi bi-plug icon-box"></i>Desconectados Parceiros</h6>
-        <h4>${desconectadosParceiros}</h4>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card card-summary card-summary-secondary p-3">
-        <h6 class="small"><i class="bi bi-check2-circle icon-box"></i>Conectados Parceiros</h6>
-        <h4>${conectadosParceiros}</h4>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card card-summary card-summary-secondary p-3">
-        <h6 class="small"><i class="bi bi-shop icon-box"></i>Total Lojas Parceiros</h6>
-        <h4>${totalParceiros}</h4>
-      </div>
-    </div>`;
-
-  document.getElementById('tabela-retorne').innerHTML = htmlRetorne;
-  document.getElementById('tabela-parceiros').innerHTML = htmlParceiros;
-
-  new Tablesort(document.getElementById('tabelaRetorne'));
-  new Tablesort(document.getElementById('tabelaParceiros'));
-
-}).catch(err => {
-  console.error('Erro ao buscar dados:', err);
-});
+// Atualiza a cada 60 segundos
+setInterval(carregarPainel, 60000);
 </script>
 </body>
 </html>
