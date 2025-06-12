@@ -48,6 +48,44 @@
         color: white !important;
         font-weight: bold;
     }
+
+    .scroll-wrapper {
+  overflow: hidden;
+  position: relative;
+  height: 130px;
+}
+
+.scroll-track {
+  display: flex;
+  white-space: nowrap;
+  animation: scroll-horizontal 60s linear infinite;
+}
+
+.scroll-box {
+  min-width: 250px;
+  background-color: #ffe5e0;
+  color: #661010;
+  border-radius: 12px;
+  padding: 16px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.scroll-box h6 {
+  margin: 0 0 8px;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.scroll-box .bi {
+  margin-right: 6px;
+}
+
+@keyframes scroll-horizontal {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
   </style>
 </head>
 <body>
@@ -73,6 +111,17 @@
   <!-- Linha 2 -->
   <div class="row mb-4" id="totalizadores-parceiros"></div>
 
+
+<div class="container mb-5">
+  <div class="scroll-wrapper py-2">
+    <div class="scroll-track d-flex gap-3" id="scroll-lojas">
+      <!-- Boxes serão inseridos via JS -->
+    </div>
+  </div>
+</div>
+
+
+  
   <!-- Listagem Retorne.app -->
   <div class="mb-5">
     <h4>Lojas Retorne.app</h4>
@@ -116,11 +165,10 @@ function carregarPainel() {
 
   axios.get(url).then(res => {
     const dados = res.data;
-    let desconectadosRetorne = 0;
-    let conectadosRetorne = 0;
-    let desconectadosParceiros = 0;
-    let conectadosParceiros = 0;
-    let htmlRetorne = '', htmlParceiros = '';
+
+    let desconectadosRetorne = 0, conectadosRetorne = 0;
+    let desconectadosParceiros = 0, conectadosParceiros = 0;
+    let htmlRetorne = '', htmlParceiros = '', htmlScroll = '';
 
     dados.forEach(loja => {
       const nome = loja.name;
@@ -138,14 +186,26 @@ function carregarPainel() {
         conectado ? conectadosParceiros++ : desconectadosParceiros++;
         htmlParceiros += row;
       }
+
+      // Box para scroll horizontal
+      htmlScroll += `
+        <div class="scroll-box">
+          <h6>${nome}</h6>
+          <div><i class="bi bi-people-fill"></i> ${total} clientes</div>
+        </div>`;
     });
 
-    const totalRetorne = desconectadosRetorne + conectadosRetorne;
-    const totalParceiros = desconectadosParceiros + conectadosParceiros;
+    const totalRetorne = conectadosRetorne + desconectadosRetorne;
+    const totalParceiros = conectadosParceiros + desconectadosParceiros;
     const totalGeral = totalRetorne + totalParceiros;
 
+    // Total no topo
     document.getElementById('total-lojas').innerText = totalGeral;
 
+    // Cards scroll horizontal
+    document.getElementById('scroll-lojas').innerHTML = htmlScroll + htmlScroll;
+
+    // Totalizadores Retorne
     document.getElementById('totalizadores-retorne').innerHTML = `
       <div class="col-md-4">
         <div class="card card-summary p-3">
@@ -166,6 +226,7 @@ function carregarPainel() {
         </div>
       </div>`;
 
+    // Totalizadores Parceiros
     document.getElementById('totalizadores-parceiros').innerHTML = `
       <div class="col-md-4">
         <div class="card card-summary card-summary-secondary p-3">
@@ -186,9 +247,11 @@ function carregarPainel() {
         </div>
       </div>`;
 
+    // Tabelas
     document.getElementById('tabela-retorne').innerHTML = htmlRetorne;
     document.getElementById('tabela-parceiros').innerHTML = htmlParceiros;
 
+    // Ordenação
     new Tablesort(document.getElementById('tabelaRetorne'));
     new Tablesort(document.getElementById('tabelaParceiros'));
   }).catch(err => {
@@ -202,5 +265,6 @@ carregarPainel();
 // Atualiza a cada 60 segundos
 setInterval(carregarPainel, 60000);
 </script>
+
 </body>
 </html>
