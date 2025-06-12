@@ -86,25 +86,40 @@
   100% { transform: translateX(-50%); }
 }
 body.dark-mode {
-  background-color: #121212;
+  background-color: #1e1e1e;
   color: #e0e0e0;
 }
+
 body.dark-mode .card-summary,
 body.dark-mode .card-summary-secondary,
-body.dark-mode .table,
 body.dark-mode .scroll-box {
-  background-color: #1e1e1e !important;
-  color: #f5f5f5 !important;
-  border-color: #333;
+  background-color: #2c2c2c !important;
+  color: #f1f1f1 !important;
+  border-color: #444;
 }
+
+body.dark-mode .table {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
 body.dark-mode .table thead {
-  background-color: #333;
-  color: #fff;
+  background-color: #3a3a3a;
+  color: #ffffff;
 }
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+  color: #f5f5f5 !important;
+}
+
 body.dark-mode td.status-desconectado {
-  background-color: #dc3545 !important;
-  color: white !important;
-}
+
+
 
   </style>
 </head>
@@ -126,6 +141,7 @@ body.dark-mode td.status-desconectado {
         <i class="bi bi-arrows-fullscreen"></i>
       </button>
     </div>
+
 
     
   </div>
@@ -169,7 +185,7 @@ body.dark-mode td.status-desconectado {
 
 </div>
 <div>
-  <p><small>Retorne.app v1.6</small></p>
+  <p><small>Retorne.app v1.7</small></p>
 </div>
 <script>
   function toggleFullScreen() {
