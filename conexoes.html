@@ -152,8 +152,9 @@ body.dark-mode #total-label {
 
 @keyframes scroll-left {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  100% { transform: translateX(-100%); }
 }
+
 
 
   </style>
@@ -276,21 +277,11 @@ function carregarPainel() {
         const div = document.createElement('div');
         div.className = 'scroll-box';
         div.innerHTML = `<h6>${nome}</h6><div><i class="bi bi-people-fill"></i> ${total} clientes</div>`;
-        boxes.push(div);
+        scrollTrack.appendChild(div); // só adiciona 1x
       }
 
       htmlTabela += `<tr><td>${nome}</td><td class="${statusClass}">${status}</td><td>${total}</td></tr>`;
     });
-
-    // Repetição para garantir efeito visual mesmo com poucos itens
-    const minBoxes = 6;
-    const repeatCount = Math.ceil(minBoxes / (boxes.length || 1));
-    for (let i = 0; i < repeatCount; i++) {
-      boxes.forEach(box => {
-        const clone = box.cloneNode(true);
-        scrollTrack.appendChild(clone);
-      });
-    }
 
     const totalLojas = conectados + desconectados;
     document.getElementById('total-lojas').innerText = totalLojas;
@@ -326,6 +317,8 @@ function carregarPainel() {
 carregarPainel();
 setInterval(carregarPainel, 240000); // Atualiza a cada 4 minutos
 </script>
+
+  
 
 
 
