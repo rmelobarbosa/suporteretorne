@@ -85,6 +85,26 @@
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+body.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+body.dark-mode .card-summary,
+body.dark-mode .card-summary-secondary,
+body.dark-mode .table,
+body.dark-mode .scroll-box {
+  background-color: #1e1e1e !important;
+  color: #f5f5f5 !important;
+  border-color: #333;
+}
+body.dark-mode .table thead {
+  background-color: #333;
+  color: #fff;
+}
+body.dark-mode td.status-desconectado {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
 
   </style>
 </head>
@@ -98,6 +118,16 @@
       </h1>
     </div>
     <small class="text-muted mt-2" style="font-size: 1rem;">Total de lojas ativas no sistema</small>
+    <div class="position-absolute top-0 end-0 p-3 d-flex gap-3">
+      <button class="btn btn-outline-secondary btn-sm" onclick="toggleTheme()" title="Alternar tema">
+        <i class="bi bi-circle-half"></i>
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" onclick="toggleFullScreen()" title="Tela cheia">
+        <i class="bi bi-arrows-fullscreen"></i>
+      </button>
+    </div>
+
+    
   </div>
 </div>
 
@@ -139,12 +169,30 @@
 
 </div>
 <div>
-  <p><small>Retorne.app v1.5</small></p>
+  <p><small>Retorne.app v1.6</small></p>
 </div>
 <script>
+  function toggleFullScreen() {
+  const doc = document.documentElement;
+  if (!document.fullscreenElement) {
+    doc.requestFullscreen().catch(err => console.error(err));
+  } else {
+    document.exitFullscreen();
+  }
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('dark-mode');
+}
+
 function carregarPainel() {
   const urlParams = new URLSearchParams(window.location.search);
-  const userId = urlParams.get('userId');
+  let userId = urlParams.get('userId');
+  
+  // Remove sufixo "92ZTDZ" se existir
+  if (userId && userId.endsWith('92ZTDZ')) {
+    userId = userId.replace('92ZTDZ', '');
+  }
   if (!userId) {
     alert('Parâmetro userId não informado na URL');
     return;
