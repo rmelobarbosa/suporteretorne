@@ -87,7 +87,7 @@
 }
 
 body.dark-mode .scroll-box {
-  background-color: #fff3cd !important; /* mantém amarelo no dark */
+  background-color: #ffe5e0 !important; /* mantém amarelo no dark */
   color: #661010 !important;
 }
 
@@ -147,8 +147,12 @@ body.dark-mode #total-label {
 
 .scroll-track {
   display: inline-flex;
-  animation: scroll-left linear infinite;
-  animation-duration: 60s; /* ajustável */
+  animation: scroll-left 30s linear infinite;
+}
+
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 
@@ -217,7 +221,7 @@ body.dark-mode #total-label {
 
 </div>
 <div>
-  <p><small>Retorne.app v1.8</small></p>
+  <p><small>Retorne.app v1.9</small></p>
 </div>
 <script>
 function toggleFullScreen() {
@@ -236,7 +240,7 @@ function toggleTheme() {
 function carregarPainel() {
   const urlParams = new URLSearchParams(window.location.search);
   let userId = urlParams.get('userId');
-  
+
   // Remove sufixo "92ZTDZ" se existir
   if (userId && userId.endsWith('92ZTDZ')) {
     userId = userId.replace('92ZTDZ', '');
@@ -245,6 +249,7 @@ function carregarPainel() {
     alert('Parâmetro userId não informado na URL');
     return;
   }
+
   const url = `https://api.fabrica.app/user/queries/statusbyuser?userId=${userId}`;
 
   axios.get(url).then(res => {
@@ -253,9 +258,8 @@ function carregarPainel() {
     let conectados = 0, desconectados = 0;
     let htmlTabela = '';
 
-    // Scroll box
     const scrollTrack = document.getElementById('scroll-lojas');
-    scrollTrack.innerHTML = ''; // limpa
+    scrollTrack.innerHTML = ''; // limpa o carrossel
     const boxes = [];
 
     dados.forEach(loja => {
@@ -273,18 +277,20 @@ function carregarPainel() {
         div.className = 'scroll-box';
         div.innerHTML = `<h6>${nome}</h6><div><i class="bi bi-people-fill"></i> ${total} clientes</div>`;
         boxes.push(div);
-        scrollTrack.appendChild(div);
       }
 
-      // Tabela
       htmlTabela += `<tr><td>${nome}</td><td class="${statusClass}">${status}</td><td>${total}</td></tr>`;
     });
 
-    // Clona para looping suave
-    boxes.forEach(box => {
-      const clone = box.cloneNode(true);
-      scrollTrack.appendChild(clone);
-    });
+    // Repetição para garantir efeito visual mesmo com poucos itens
+    const minBoxes = 6;
+    const repeatCount = Math.ceil(minBoxes / (boxes.length || 1));
+    for (let i = 0; i < repeatCount; i++) {
+      boxes.forEach(box => {
+        const clone = box.cloneNode(true);
+        scrollTrack.appendChild(clone);
+      });
+    }
 
     const totalLojas = conectados + desconectados;
     document.getElementById('total-lojas').innerText = totalLojas;
@@ -310,6 +316,7 @@ function carregarPainel() {
       </div>`;
 
     document.getElementById('tabela-retorne').innerHTML = htmlTabela;
+
     new Tablesort(document.getElementById('tabelaRetorne'));
   }).catch(err => {
     console.error('Erro ao buscar dados:', err);
@@ -319,6 +326,7 @@ function carregarPainel() {
 carregarPainel();
 setInterval(carregarPainel, 240000); // Atualiza a cada 4 minutos
 </script>
+
 
 
 
