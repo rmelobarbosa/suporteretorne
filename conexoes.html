@@ -143,8 +143,14 @@
 </div>
 <script>
 function carregarPainel() {
-  const userId = 102; // <-- Troque aqui conforme necessário
+  const urlParams = new URLSearchParams(window.location.search);
+  const userId = urlParams.get('userId');
+  if (!userId) {
+    alert('Parâmetro userId não informado na URL');
+    return;
+  }
   const url = `https://api.fabrica.app/user/queries/statusbyuser?userId=${userId}`;
+  
 
   axios.get(url).then(res => {
     const dados = res.data;
