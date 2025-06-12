@@ -71,6 +71,7 @@
   box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
+
 .scroll-box h6 {
   margin: 0 0 8px;
   font-weight: 600;
@@ -118,7 +119,13 @@ body.dark-mode h6 {
 }
 
 body.dark-mode td.status-desconectado {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
 
+body.dark-mode #total-label {
+  color: #cccccc;
+}
 
 
   </style>
@@ -132,7 +139,8 @@ body.dark-mode td.status-desconectado {
         <span id="total-lojas">...</span>
       </h1>
     </div>
-    <small class="text-muted mt-2" style="font-size: 1rem;">Total de lojas ativas no sistema</small>
+    <small id="total-label" class="mt-2" style="font-size: 1rem;">Total de lojas ativas no sistema</small>
+
     <div class="position-absolute top-0 end-0 p-3 d-flex gap-3">
       <button class="btn btn-outline-secondary btn-sm" onclick="toggleTheme()" title="Alternar tema">
         <i class="bi bi-circle-half"></i>
