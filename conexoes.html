@@ -74,11 +74,12 @@
 }
 
 @keyframes move-left {
-  0%   { left: 100%; opacity: 0; }
+  0%   { transform: translateX(100vw); opacity: 0; }
   5%   { opacity: 1; }
   90%  { opacity: 1; }
-  100% { left: -300px; opacity: 0; }
+  100% { transform: translateX(-300px); opacity: 0; }
 }
+
 
 
     
@@ -226,10 +227,10 @@ body.dark-mode #total-label {
 
 </div>
 <div>
-  <p><small>Retorne.app v1.92</small></p>
+  <p><small>Retorne.app v1.93</small></p>
 </div>
 
-  <script>
+<script>
 function toggleFullScreen() {
   const doc = document.documentElement;
   if (!document.fullscreenElement) {
@@ -286,7 +287,11 @@ function carregarPainel() {
       htmlTabela += `<tr><td>${nome}</td><td class="${statusClass}">${status}</td><td>${total}</td></tr>`;
     });
 
-   boxes.forEach(box => scrollTrack.appendChild(box));
+    // Adiciona ao DOM com delays para animação escalonada
+    boxes.forEach((box, i) => {
+      box.style.animationDelay = (i * 6) + 's';
+      scrollTrack.appendChild(box);
+    });
 
     const totalLojas = conectados + desconectados;
     document.getElementById('total-lojas').innerText = totalLojas;
@@ -319,7 +324,7 @@ function carregarPainel() {
 }
 
 carregarPainel();
-setInterval(carregarPainel, 240000);
+setInterval(carregarPainel, 240000); // atualiza a cada 4 minutos
 </script>
 
 
