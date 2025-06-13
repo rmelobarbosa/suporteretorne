@@ -10,159 +10,130 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js"></script>
   <style>
-    body {
-      background-color: #f9f9fb;
-      font-family: 'Poppins', sans-serif;
-    }
-    .card-summary {
-      border-left: 5px solid #ff6b00;
-      background-color: #fff;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    .card-summary-secondary {
-      border-left: 5px solid #0d2b52;
-    }
-    .status-desconectado {
-      background-color: #dc3545;
-      color: white;
-      font-weight: bold;
-    }
-    .status-conectado {
-      color: #198754;
-      font-weight: bold;
-    }
-    .table thead {
-      background-color: #0d2b52;
-      color: white;
-      cursor: pointer;
-    }
-    h4, h3, h2 {
-      color: #0d2b52;
-    }
-    .icon-box {
-      margin-right: 8px;
-      color: #ff6b00;
-    }
-    td.status-desconectado {
-        background-color: #dc3545 !important;
-        color: white !important;
-        font-weight: bold;
-    }
+  body {
+    background-color: #f9f9fb;
+    font-family: 'Poppins', sans-serif;
+  }
 
+  .card-summary {
+    border-left: 5px solid #ff6b00;
+    background-color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  }
 
-.scroll-wrapper {
-  overflow: hidden;
-  position: relative;
-  height: 130px;
-}
+  .status-desconectado {
+    background-color: #dc3545;
+    color: white;
+    font-weight: bold;
+  }
 
-.scroll-track {
-  position: relative;
-  height: 100%;
-}
+  .status-conectado {
+    color: #198754;
+    font-weight: bold;
+  }
 
-.scroll-box {
-  position: absolute;
-  min-width: 250px;
-  height: 100%;
-  background-color: #ffe5e0;
-  color: #661010;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-  animation: move-left 30s linear infinite;
-}
+  .table thead {
+    background-color: #0d2b52;
+    color: white;
+    cursor: pointer;
+  }
 
-@keyframes move-left {
-  0%   { transform: translateX(100vw); opacity: 0; }
-  5%   { opacity: 1; }
-  90%  { opacity: 1; }
-  100% { transform: translateX(-300px); opacity: 0; }
-}
+  .icon-box {
+    margin-right: 8px;
+    color: #ff6b00;
+  }
 
+  td.status-desconectado {
+    background-color: #dc3545 !important;
+    color: white !important;
+    font-weight: bold;
+  }
 
+  /* SCROLL CONTÍNUO */
+  .scroll-wrapper {
+    overflow: hidden;
+    position: relative;
+    height: 130px;
+  }
 
-    
-.scroll-box h6 {
-  margin: 0 0 8px;
-  font-weight: 600;
-  font-size: 1rem;
-  color: #661010; /* vermelho escuro */
-}
+  .scroll-track {
+    display: flex;
+    gap: 24px;
+    animation: scroll-left 30s linear infinite;
+    will-change: transform;
+  }
 
-body.dark-mode .scroll-box {
-  background-color: #ffe5e0 !important; /* mantém amarelo no dark */
-  color: #661010 !important;
-}
+  .scroll-box {
+    min-width: 250px;
+    background-color: #ffe5e0;
+    color: #661010;
+    border-radius: 12px;
+    padding: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  }
 
-body.dark-mode .scroll-box h6 {
-  color: #661010 !important;
-}
+  .scroll-box h6 {
+    margin: 0 0 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #661010;
+  }
 
+  .scroll-box .bi {
+    margin-right: 6px;
+  }
 
-.scroll-box .bi {
-  margin-right: 6px;
-}
+  @keyframes scroll-left {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
 
-@keyframes scroll-horizontal {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-body.dark-mode {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
-}
+  /* DARK MODE */
+  body.dark-mode {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+  }
 
-body.dark-mode .card-summary,
-body.dark-mode .card-summary-secondary,
+  body.dark-mode .card-summary,
+  body.dark-mode .table {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+  }
 
+  body.dark-mode .table thead {
+    background-color: #3a3a3a;
+    color: #ffffff;
+  }
 
-body.dark-mode .table {
-  background-color: #2a2a2a;
-  color: #e0e0e0;
-}
+  body.dark-mode h1,
+  body.dark-mode h2,
+  body.dark-mode h3,
+  body.dark-mode h4,
+  body.dark-mode h5,
+  body.dark-mode h6 {
+    color: #f5f5f5 !important;
+  }
 
-body.dark-mode .table thead {
-  background-color: #3a3a3a;
-  color: #ffffff;
-}
+  body.dark-mode td.status-desconectado {
+    background-color: #dc3545 !important;
+    color: white !important;
+  }
 
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode h4,
-body.dark-mode h5,
-body.dark-mode h6 {
-  color: #f5f5f5 !important;
-}
+  body.dark-mode #total-label {
+    color: #cccccc;
+  }
 
-body.dark-mode td.status-desconectado {
-  background-color: #dc3545 !important;
-  color: white !important;
-}
+  body.dark-mode .scroll-box {
+    background-color: #ffe5e0 !important;
+    color: #661010 !important;
+  }
 
-body.dark-mode #total-label {
-  color: #cccccc;
-}
-@keyframes scroll-left {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
-}
+  body.dark-mode .scroll-box h6 {
+    color: #661010 !important;
+  }
+</style>
 
-.scroll-track {
-  display: inline-flex;
-  animation: scroll-left 30s linear infinite;
-}
-
-@keyframes scroll-left {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
-
-
-
-  </style>
 </head>
 <body>
 <div class="container py-3">
@@ -287,10 +258,11 @@ function carregarPainel() {
       htmlTabela += `<tr><td>${nome}</td><td class="${statusClass}">${status}</td><td>${total}</td></tr>`;
     });
 
-    // Adiciona ao DOM com delays para animação escalonada
-    boxes.forEach((box, i) => {
-      box.style.animationDelay = (i * 6) + 's';
-      scrollTrack.appendChild(box);
+    // Adiciona os boxes e clona para o loop
+    boxes.forEach(box => scrollTrack.appendChild(box));
+    boxes.forEach(box => {
+      const clone = box.cloneNode(true);
+      scrollTrack.appendChild(clone);
     });
 
     const totalLojas = conectados + desconectados;
@@ -324,8 +296,9 @@ function carregarPainel() {
 }
 
 carregarPainel();
-setInterval(carregarPainel, 240000); // atualiza a cada 4 minutos
+setInterval(carregarPainel, 240000); // 4 minutos
 </script>
+
 
 
 
