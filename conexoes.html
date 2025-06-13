@@ -64,15 +64,16 @@
   }
 
   .scroll-track {
-    display: flex;
-    gap: 24px;
-    animation: scroll-left 30s linear infinite;
-  }
+  display: flex;
+  gap: 24px;
+  width: max-content;
+  animation: scroll-left 40s linear infinite;
+}
 
-  @keyframes scroll-left {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 
   .scroll-box {
     min-width: 250px;
@@ -205,7 +206,7 @@
 
 </div>
 <div>
-  <p><small>Retorne.app v1.94</small></p>
+  <p><small>Retorne.app v1.95</small></p>
 </div>
 
 <script>
@@ -238,11 +239,9 @@ function carregarScrollLojas(dados) {
     }
   });
 
-  // Inserção e duplicação só se houver mais de 1 box
+  // Sempre duplica para garantir largura para scroll
   boxes.forEach(box => scrollTrack.appendChild(box));
-  if (boxes.length > 1) {
-    boxes.forEach(box => scrollTrack.appendChild(box.cloneNode(true)));
-  }
+  boxes.forEach(box => scrollTrack.appendChild(box.cloneNode(true)));
 }
 
 function carregarPainel() {
