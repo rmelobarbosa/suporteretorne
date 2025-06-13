@@ -21,6 +21,10 @@
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   }
 
+  .card-summary-secondary {
+    border-left: 5px solid #0d2b52;
+  }
+
   .status-desconectado {
     background-color: #dc3545;
     color: white;
@@ -38,6 +42,10 @@
     cursor: pointer;
   }
 
+  h4, h3, h2 {
+    color: #0d2b52;
+  }
+
   .icon-box {
     margin-right: 8px;
     color: #ff6b00;
@@ -49,7 +57,6 @@
     font-weight: bold;
   }
 
-  /* SCROLL CONTÍNUO */
   .scroll-wrapper {
     overflow: hidden;
     position: relative;
@@ -60,7 +67,11 @@
     display: flex;
     gap: 24px;
     animation: scroll-left 30s linear infinite;
-    will-change: transform;
+  }
+
+  @keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
   }
 
   .scroll-box {
@@ -84,18 +95,22 @@
     margin-right: 6px;
   }
 
-  @keyframes scroll-left {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-
-  /* DARK MODE */
   body.dark-mode {
     background-color: #1e1e1e;
     color: #e0e0e0;
   }
 
+  body.dark-mode .scroll-box {
+    background-color: #ffe5e0 !important;
+    color: #661010 !important;
+  }
+
+  body.dark-mode .scroll-box h6 {
+    color: #661010 !important;
+  }
+
   body.dark-mode .card-summary,
+  body.dark-mode .card-summary-secondary,
   body.dark-mode .table {
     background-color: #2a2a2a;
     color: #e0e0e0;
@@ -123,16 +138,8 @@
   body.dark-mode #total-label {
     color: #cccccc;
   }
-
-  body.dark-mode .scroll-box {
-    background-color: #ffe5e0 !important;
-    color: #661010 !important;
-  }
-
-  body.dark-mode .scroll-box h6 {
-    color: #661010 !important;
-  }
 </style>
+
 
 </head>
 <body>
@@ -198,7 +205,7 @@
 
 </div>
 <div>
-  <p><small>Retorne.app v1.93</small></p>
+  <p><small>Retorne.app v1.94</small></p>
 </div>
 
 <script>
@@ -213,6 +220,29 @@ function toggleFullScreen() {
 
 function toggleTheme() {
   document.body.classList.toggle('dark-mode');
+}
+
+function carregarScrollLojas(dados) {
+  const scrollTrack = document.getElementById('scroll-lojas');
+  scrollTrack.innerHTML = '';
+
+  const boxes = [];
+
+  dados.forEach(loja => {
+    const conectado = loja.whatsapp_instance_id !== null && loja.whatsapp_instance_id !== '';
+    if (!conectado) {
+      const box = document.createElement('div');
+      box.className = 'scroll-box';
+      box.innerHTML = `<h6>${loja.name}</h6><div><i class="bi bi-people-fill"></i> ${parseInt(loja.total_clientes || 0)} clientes</div>`;
+      boxes.push(box);
+    }
+  });
+
+  // Inserção e duplicação só se houver mais de 1 box
+  boxes.forEach(box => scrollTrack.appendChild(box));
+  if (boxes.length > 1) {
+    boxes.forEach(box => scrollTrack.appendChild(box.cloneNode(true)));
+  }
 }
 
 function carregarPainel() {
@@ -234,10 +264,6 @@ function carregarPainel() {
     let conectados = 0, desconectados = 0;
     let htmlTabela = '';
 
-    const scrollTrack = document.getElementById('scroll-lojas');
-    scrollTrack.innerHTML = '';
-    const boxes = [];
-
     dados.forEach(loja => {
       const nome = loja.name;
       const total = parseInt(loja.total_clientes || 0);
@@ -245,28 +271,15 @@ function carregarPainel() {
       const status = conectado ? 'Conectado' : 'Desconectado';
       const statusClass = conectado ? 'status-conectado' : 'status-desconectado';
 
-      if (conectado) {
-        conectados++;
-      } else {
-        desconectados++;
-        const box = document.createElement('div');
-        box.className = 'scroll-box';
-        box.innerHTML = `<h6>${nome}</h6><div><i class="bi bi-people-fill"></i> ${total} clientes</div>`;
-        boxes.push(box);
-      }
+      if (conectado) conectados++;
+      else desconectados++;
 
       htmlTabela += `<tr><td>${nome}</td><td class="${statusClass}">${status}</td><td>${total}</td></tr>`;
     });
 
-    // Adiciona os boxes e clona para o loop
-    boxes.forEach(box => scrollTrack.appendChild(box));
-    boxes.forEach(box => {
-      const clone = box.cloneNode(true);
-      scrollTrack.appendChild(clone);
-    });
+    document.getElementById('tabela-retorne').innerHTML = htmlTabela;
 
-    const totalLojas = conectados + desconectados;
-    document.getElementById('total-lojas').innerText = totalLojas;
+    document.getElementById('total-lojas').innerText = conectados + desconectados;
 
     document.getElementById('totalizadores-retorne').innerHTML = `
       <div class="col-md-4">
@@ -284,20 +297,22 @@ function carregarPainel() {
       <div class="col-md-4">
         <div class="card card-summary p-3">
           <h6><i class="bi bi-shop icon-box"></i>Total Lojas</h6>
-          <h3>${totalLojas}</h3>
+          <h3>${conectados + desconectados}</h3>
         </div>
       </div>`;
 
-    document.getElementById('tabela-retorne').innerHTML = htmlTabela;
     new Tablesort(document.getElementById('tabelaRetorne'));
+
+    carregarScrollLojas(dados);
   }).catch(err => {
     console.error('Erro ao buscar dados:', err);
   });
 }
 
 carregarPainel();
-setInterval(carregarPainel, 240000); // 4 minutos
+setInterval(carregarPainel, 240000);
 </script>
+
 
 
 
