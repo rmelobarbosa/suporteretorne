@@ -206,7 +206,7 @@
 
 </div>
 <div>
-  <p><small>Retorne.app v1.95</small></p>
+  <p><small>Retorne.app v1.96</small></p>
 </div>
 
 <script>
@@ -239,10 +239,13 @@ function carregarScrollLojas(dados) {
     }
   });
 
-  // Sempre duplica para garantir largura para scroll
+  // Se tiver mais de 1, duplica para looping
   boxes.forEach(box => scrollTrack.appendChild(box));
-  boxes.forEach(box => scrollTrack.appendChild(box.cloneNode(true)));
+  if (boxes.length > 1) {
+    boxes.forEach(box => scrollTrack.appendChild(box.cloneNode(true)));
+  }
 }
+
 
 function carregarPainel() {
   const urlParams = new URLSearchParams(window.location.search);
