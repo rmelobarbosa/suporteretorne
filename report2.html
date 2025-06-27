@@ -124,6 +124,10 @@ const mesesNomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho
 const params = new URLSearchParams(window.location.search);
 const rawUserId = params.get('userId') || "";
 const userId = rawUserId.replace('1092EZT3', '');
+if (!userId) {
+  alert("ID do usuário inválido.");
+  throw new Error("ID de usuário inválido");
+}
 const endpoint = `https://api.fabrica.app/user/queries/campaignbyuser?userId=${userId}`;
 let dadosOriginais = [];
 const filtrosChoices = {};
@@ -195,7 +199,7 @@ function aplicarFiltros() {
 function atualizarTitulo(meses, lojas) {
   const titulo = document.getElementById('tituloRelatorio');
   const nomeMes = meses.length === 1 ? mesesNomes[parseInt(meses[0]) - 1] : 'Período selecionado';
-  const nomeLoja = lojas.length === 1 ? lojas[0] : `${lojas.length} Unidades`;
+ const nomeLoja = lojas.length === 1 ? lojas[0] : `${lojas.length} Unidades`;
   titulo.textContent = `📊 Resultados em ${nomeMes} para ${nomeLoja}`;
 }
 
